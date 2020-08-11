@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { NativeListItem, NamespaceHeader } from '../../components'
+import { NativeListItem, NamespaceHeader, SectionList } from '../../components'
 import { useSelector } from 'react-redux'
 import { StickyTree } from 'react-virtualized-sticky-tree'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -72,21 +72,8 @@ export default React.memo(() => {
     }
   }, [namespaces, namespaceData])
 
-  const renderRow = useCallback(({ id, style }) => {
-    if (!listLoaded) {
-      setListLoaded(true)
-    }
-
-    if (id && (id[0] !== '0')) {
-      return (
-        <NamespaceHeader 
-          id={id} 
-          style={style} 
-          name={namespaces[id].name} 
-        />
-      )
-    }
-    
+  const renderItem = useCallback((id, style) => {
+    console.log(style)
     return (
       <div style={style} key={id}>
         <NativeListItem
@@ -115,20 +102,12 @@ export default React.memo(() => {
           onSelect={gotoNamespace}
         />
       </Portal>
-      <AutoSizer>
-        {({ height, width }) => (
-          <StickyTree
-            root={{ id: 'root', height: 0 }}
-            width={width}
-            height={height}
-            getChildren={getChildren}
-            rowRenderer={renderRow}
-            renderRoot={false}
-            overscanRowCount={5}
-            scrollIndex={scroll}
-          />
-        )}
-      </AutoSizer>
+      <SectionList
+        data={Object.values(namespaces)}
+        headerHeight={73}
+        itemHeight={28}
+        renderItem={renderItem}
+      />
     </React.Fragment>
   )
 })
