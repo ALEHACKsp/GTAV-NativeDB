@@ -7,8 +7,9 @@ import { useCallback } from 'react'
 const useStyle = makeStyles({
   container: {
     width: '100%',
-    height: '200px',
+    height: '100%',
     overflowY: 'auto',
+    overflowX: 'hidden',
   }
 })
 
@@ -18,6 +19,7 @@ export default React.memo(({ data, renderItem, renderHeader, itemHeight, headerH
   const [items, setItems] = useState([])
   const [sectionHeights, setSectionHeights] = useState([])
   const [totalHeight, setTotalHeight] = useState(0)
+  const containerHeight = containerRef.current?.offsetHeight + headerHeight
 
   useEffect(() => {
     if (!Array.isArray(data)) {
@@ -35,23 +37,37 @@ export default React.memo(({ data, renderItem, renderHeader, itemHeight, headerH
     
     let i = 0
     for (const height of sectionHeights) {
-      if (totalHeight > (scroll + 200)) {
+      if (totalHeight > (scroll + containerHeight)) {
         break
       }
-      else if ((totalHeight + height) >= scroll) {
-        newItems.push(
-          renderHeader(data[i], {
-            position: 'absolute',
-            top: (totalHeight - headerHeight)
-          })
-        )
+      else if ((totalHeight + height) >= (scroll - headerHeight)) {
+        if ((scroll + headerHeight) >= totalHeight) {
+          const end = (totalHeight + height) - (headerHeight * 2)
+          newItems.push(
+            renderHeader(data[i], {
+              position: (scroll >= end) ? 'absolute' : 'sticky',
+              top: (scroll >= end) ? end : 0,
+              width: '100%',
+            })
+          )
+        }
+        else {
+          newItems.push(
+            renderHeader(data[i], {
+              position: 'absolute',
+              top: (totalHeight - headerHeight),
+              width: '100%',
+            })
+          )
+        }
 
         let firstItem = Math.max(0, Math.floor(((scroll - totalHeight) / itemHeight)))
-        for (let j = firstItem; j < Math.min(firstItem + (200 / itemHeight), data[i].natives.length); ++j) {
+        for (let j = firstItem; j < Math.min(firstItem + (containerHeight / itemHeight), data[i].natives.length); ++j) {
           newItems.push(
             renderItem(data[i].natives[j], {
               position: 'absolute',
-              top: (totalHeight + (j * itemHeight))
+              top: (totalHeight + (j * itemHeight)),
+              width: '100%',
             })
           )
         }
@@ -62,7 +78,7 @@ export default React.memo(({ data, renderItem, renderHeader, itemHeight, headerH
     }
 
     setItems(newItems)
-  }, [data, renderItem, itemHeight, sectionHeights])
+  }, [data, renderItem, itemHeight, sectionHeights, containerHeight])
 
   useEffect(() => {
     generateItems(0)
@@ -80,7 +96,7 @@ export default React.memo(({ data, renderItem, renderHeader, itemHeight, headerH
       ref={containerRef}
       onScroll={onScroll}
     >
-      <div style={{ position: 'relative', height: totalHeight }}>
+      <div style={{ position: 'relative', height: totalHeight, width: '100%', }}>
         {items}
       </div>
     </div>
