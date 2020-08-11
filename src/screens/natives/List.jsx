@@ -59,21 +59,7 @@ export default React.memo(() => {
     setNamespaceData(result)
   }, [namespaces])
 
-  const getChildren = useCallback((id) => {
-    if (id === 'root') {
-      return Object.values(namespaces).map(ns => ({
-        id: ns.name,
-        height: 73,
-        isSticky: true,
-      }))
-    }
-    else if (id && (id[0] !== '0')) {
-      return namespaceData[id]
-    }
-  }, [namespaces, namespaceData])
-
   const renderItem = useCallback((id, style) => {
-    console.log(style)
     return (
       <div style={style} key={id}>
         <NativeListItem
@@ -81,7 +67,17 @@ export default React.memo(() => {
         />
       </div>
     )
-  }, [namespaces, listLoaded ])
+  }, [namespaces, listLoaded])
+
+  const renderHeader = useCallback(({ name }, style) => {
+    return (
+      <NamespaceHeader 
+        name={name} 
+        style={style}
+        key={name}
+      />
+    )
+  })
 
   const gotoNamespace = useCallback((namespace) => {
     let result = -1
@@ -107,6 +103,7 @@ export default React.memo(() => {
         headerHeight={73}
         itemHeight={28}
         renderItem={renderItem}
+        renderHeader={renderHeader}
       />
     </React.Fragment>
   )
